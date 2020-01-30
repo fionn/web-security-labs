@@ -12,11 +12,10 @@ class Lab:
         lab_id = os.environ["LAB_ID"]
         self.url = f"https://{lab_id}.web-security-academy.net"
 
-    @staticmethod
-    def get(url: str) -> requests.models.Response:
+    # pylint: disable=no-self-use # we override it later
+    def get(self, url: str) -> requests.models.Response:
         """Get URL"""
         response = requests.get(url)
-        response.raise_for_status()
         return response
 
     def robots(self) -> requests.models.Response:
