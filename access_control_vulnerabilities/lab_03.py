@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """User role controlled by request parameter"""
 
+from typing import Optional
+
 import requests
 import bs4 # type: ignore
 
@@ -13,31 +15,28 @@ class Lab(lab_02.Lab):
         super().__init__()
         self.session = requests.Session()
 
-    def get(self, url: str) -> requests.models.Response:  # type: ignore
+    def get(self, url: str) -> requests.models.Response:
         """Get url"""
         response = self.session.get(url)
-        response.raise_for_status()
         return response
 
-    @staticmethod
-    def _get_csrf_token(response: requests.models.Response) -> str:
-        """Sets the CSRF token from the sign_in repsonse"""
-        soup = bs4.BeautifulSoup(response.text,
-                                 features="lxml")
-        meta_token = soup.find("input", attrs={"name": "csrf", "type": "hidden"})
+    def csrf_token(self, path: str) -> str:
+        """Get CSRF token"""
+        response = self.get(self.url + path)
+        soup = bs4.BeautifulSoup(response.text, features="lxml")
+        meta_token = soup.find("input",
+                               attrs={"name": "csrf", "type": "hidden"})
         csrf_token = meta_token["value"]
         if csrf_token is None:
             raise ValueError("No CSRF token")
         return csrf_token
 
-    def csrf_token(self, path: str) -> str:
-        """Get CSRF token"""
-        response = self.get(self.url + path)
-        return self._get_csrf_token(response)
-
-    def login(self, username: str, password: str, csrf: str) -> requests.models.Response:
+    def login(self, username: str, password: str,
+              csrf: Optional[str] = None) -> requests.models.Response:
         """Log in"""
-        payload = {"csrf": csrf, "username": username, "password": password}
+        payload = {"username": username, "password": password}
+        if csrf:
+            payload["csrf"] = csrf
         response = self.session.post(f"{self.url}/login", data=payload)
         return response
 
