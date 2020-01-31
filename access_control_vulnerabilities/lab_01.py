@@ -13,9 +13,9 @@ class Lab:
         self.url = f"https://{lab_id}.web-security-academy.net"
 
     # pylint: disable=no-self-use # we override it later
-    def get(self, url: str) -> requests.models.Response:
+    def get(self, url: str, params: dict = None) -> requests.models.Response:
         """Get URL"""
-        response = requests.get(url)
+        response = requests.get(url, params=params)
         return response
 
     def robots(self) -> requests.models.Response:
@@ -35,8 +35,9 @@ class Lab:
 
     def delete_user(self, admin_panel: str, username: str) -> requests.models.Response:
         """Delete a given user"""
-        url = f"{self.url}{admin_panel}/delete?username={username}"
-        response = self.get(url=url)
+        url = f"{self.url}{admin_panel}/delete"
+        payload = {"username": username}
+        response = self.get(url=url, params=payload)
         return response
 
 def main() -> None:

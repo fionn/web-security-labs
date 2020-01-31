@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 """User role controlled by request parameter"""
 
-from typing import Optional
-
 import requests
 import bs4 # type: ignore
 
@@ -15,9 +13,9 @@ class Lab(lab_02.Lab):
         super().__init__()
         self.session = requests.Session()
 
-    def get(self, url: str) -> requests.models.Response:
+    def get(self, url: str, params: dict = None) -> requests.models.Response:
         """Get url"""
-        response = self.session.get(url)
+        response = self.session.get(url, params=params)
         return response
 
     def csrf_token(self, path: str) -> str:
@@ -32,12 +30,13 @@ class Lab(lab_02.Lab):
         return csrf_token
 
     def login(self, username: str, password: str,
-              csrf: Optional[str] = None) -> requests.models.Response:
+              csrf: str = None) -> requests.models.Response:
         """Log in"""
         payload = {"username": username, "password": password}
-        if csrf:
+        if csrf is not None:
             payload["csrf"] = csrf
         response = self.session.post(f"{self.url}/login", data=payload)
+        response.raise_for_status()
         return response
 
 def main() -> None:
