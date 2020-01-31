@@ -2,7 +2,7 @@
 """User role controlled by request parameter"""
 
 import requests
-import bs4 # type: ignore
+import bs4
 
 import lab_02
 
@@ -21,6 +21,7 @@ class Lab(lab_02.Lab):
     def csrf_token(self, path: str) -> str:
         """Get CSRF token"""
         response = self.get(self.url + path)
+        response.raise_for_status()
         soup = bs4.BeautifulSoup(response.text, features="lxml")
         meta_token = soup.find("input",
                                attrs={"name": "csrf", "type": "hidden"})
