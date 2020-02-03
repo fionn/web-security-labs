@@ -44,7 +44,7 @@ def main() -> None:
     """Entry point"""
     site = Lab()
     carlos = site.get_user_from_name("carlos")
-    api_key = site.get_api_key(carlos.id)
+    api_key = site.get_api_key_from_user_id(carlos.id)
     response = site.submit_solution(api_key)
     print(response.status_code)
 

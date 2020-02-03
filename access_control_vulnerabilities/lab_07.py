@@ -8,8 +8,8 @@ import lab_04
 class Lab(lab_04.Lab):
     """Wrapper"""
 
-    def get_api_key_from_response(self,
-                                  response: requests.models.Response) -> str:
+    @staticmethod
+    def get_api_key_from_response(response: requests.models.Response) -> str:
         """Parse response for API key"""
         api_key = None
         for line in response.text.splitlines():
