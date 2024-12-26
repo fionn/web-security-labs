@@ -5,19 +5,18 @@ import bs4
 
 import lab_05
 
+
 class Lab(lab_05.Lab):
     """Wrapper"""
 
     @staticmethod
     def parse_html_table(response_text: str) -> list:
         """parse usernames and passwords from HTML"""
-        data = []
         soup = bs4.BeautifulSoup(response_text, features="lxml")
         table = soup.find("table", attrs={"class": "is-table-longdescription"})
         rows = table.tbody.find_all("tr")
-        for row in rows:
-            data.append(row.th.text)
-        return data
+        return [row.th.text for row in rows]
+
 
 def main() -> None:
     """Entry point"""
@@ -27,6 +26,7 @@ def main() -> None:
     response = site.dump_table(["BANNER", "NULL"], table="v$version")
     version = "\n".join(site.parse_html_table(response.text))
     print(version)
+
 
 if __name__ == "__main__":
     main()

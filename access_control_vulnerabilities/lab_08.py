@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """User ID controlled by request parameter, with unpredictable user IDs"""
 
-from typing import Generator, NamedTuple
+from typing import NamedTuple
+from collections.abc import Iterator
 
 import requests
 import bs4
@@ -13,7 +14,7 @@ User = NamedTuple("User", [("name", str), ("id", str)])
 class Lab(lab_07.Lab):
     """Wrapper"""
 
-    def yield_posts(self) -> Generator[requests.models.Response, None, None]:
+    def yield_posts(self) -> Iterator[requests.models.Response]:
         """Get all the blog posts"""
         for i in range(1, 100):
             payload = {"postId": i}
@@ -39,6 +40,7 @@ class Lab(lab_07.Lab):
             if user.name == name:
                 return user
         raise ValueError(f"Couldn't find user {name}")
+
 
 def main() -> None:
     """Entry point"""

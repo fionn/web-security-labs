@@ -5,6 +5,7 @@ import requests
 
 import lab_03
 
+
 class Lab(lab_03.Lab):
     """Wrapper"""
 
@@ -14,6 +15,7 @@ class Lab(lab_03.Lab):
         response = self.session.post(url, json=payload)
         response.raise_for_status()
         return response
+
 
 def main() -> None:
     """Entry point"""

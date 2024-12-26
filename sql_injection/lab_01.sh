@@ -1,7 +1,7 @@
 #!/bin/bash
 # SQL injection vulnerability in WHERE clause allowing retrieval of hidden data
 
-set -e
+set -eu
 
 category="'+OR+1=1--"
 

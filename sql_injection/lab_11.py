@@ -5,12 +5,13 @@ import string
 
 import lab_10
 
+
 class Lab(lab_10.Lab):
     """Wrapper"""
 
     def set_cookie(self, key: str, value: str) -> None:
         """In-place cookie setter"""
-        self.session.cookies.set(key, None)
+        # self.session.cookies.set(key, None)
         self.session.cookies.set(key, value)
 
     def set_tracking_id(self, value: str) -> None:
@@ -65,6 +66,7 @@ class Lab(lab_10.Lab):
         print()
         return password
 
+
 def main() -> None:
     """Entry point"""
     site = Lab(key="", path="/")
@@ -76,7 +78,6 @@ def main() -> None:
     if not site.user_exists(username):
         raise RuntimeError("Couldn't find admin user")
 
-    user_pw_length = site.pw_length(username)
     password = site.get_password(username)
     user = Lab.User(username, password)
 

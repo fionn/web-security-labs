@@ -5,9 +5,12 @@ returned by the query
 """
 
 from functools import lru_cache
-from typing import Generator, NamedTuple
+from typing import NamedTuple
+
+from collections.abc import Iterator
 
 import lab_02
+
 
 # pylint: disable=too-few-public-methods
 class Lab(lab_02.Lab):
@@ -22,7 +25,7 @@ class Lab(lab_02.Lab):
         self.comment = comment
 
     @staticmethod
-    def _null_generator() -> Generator["Lab.NullCount", None, None]:
+    def _null_generator() -> Iterator["Lab.NullCount"]:
         """A bunch of NULLs"""
         count = 0
         while True:
@@ -31,9 +34,9 @@ class Lab(lab_02.Lab):
 
     @staticmethod
     def _dict_to_str(payload: dict) -> str:
-        return "&".join("%s=%s" % (k, v) for k, v in payload.items())
+        return "&".join(f"{k}={v}" for k, v in payload.items())
 
-    @lru_cache()
+    @lru_cache  # noqa: B019
     def column_count(self, table: str = "") -> int:
         """Get the number of columns"""
         if table:
@@ -49,10 +52,12 @@ class Lab(lab_02.Lab):
                 raise RuntimeError("404: ensure LAB_ID is correct")
         raise RuntimeError
 
+
 def main() -> None:
     """Entry point"""
     site = Lab(key="category", path="/filter")
     print(site.column_count())
+
 
 if __name__ == "__main__":
     main()

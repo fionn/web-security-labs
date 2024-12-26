@@ -11,11 +11,9 @@ class Lab(lab_04.Lab):
     @staticmethod
     def get_api_key_from_response(response: requests.models.Response) -> str:
         """Parse response for API key"""
-        api_key = None
         for line in response.text.splitlines():
             if "Your API Key is: " in line:
-                api_key = line.split("Your API Key is: ")[1].split("<")[0]
-                return api_key
+                return line.split("Your API Key is: ")[1].split("<")[0]
         raise ValueError("Cannot find API key")
 
 

